@@ -1,10 +1,11 @@
 "use client";
 import { upload } from "@imagekit/next";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import CompressImageView from "./_components/CompressImageView";
 import LoadingUplaod from "./_components/LoadingUplaod";
 import UploadedView from "./_components/UploadedView";
+import clsx from "clsx";
 
 interface UploadAuthResponse {
   signature: string;
@@ -21,6 +22,7 @@ export interface UploadedFile {
 const CompressImagePage = () => {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [data, setData] = useState<any[]>([]);
   const [uploaded, setUploaded] = useState<UploadedFile | null>(null);
 
   const selectFile = () => {
@@ -61,8 +63,43 @@ const CompressImagePage = () => {
     }
   };
 
+  useEffect(() => {
+    if (uploaded) {
+      const existing = sessionStorage.getItem("uploadedFiles");
+      let files: UploadedFile[] = [];
+
+      try {
+        files = existing ? JSON.parse(existing) : [];
+      } catch (e) {
+        files = [];
+      }
+
+      if (!Array.isArray(files)) {
+        files = [files];
+      }
+
+      const updated = [...files, uploaded];
+      sessionStorage.setItem("uploadedFiles", JSON.stringify(updated));
+
+      const dataUploaded = sessionStorage.getItem("uploadedFiles");
+      if (dataUploaded) {
+        try {
+          const parsed: any[] = JSON.parse(dataUploaded);
+          setData(parsed);
+        } catch (e) {
+          console.error("Failed to parse sessionStorage:", e);
+        }
+      }
+    }
+  }, [uploaded]);
+
   return (
-    <div className="flex min-h-[calc(100vh-200px)] flex-col">
+    <div
+      className={clsx(
+        "flex flex-col",
+        uploaded ? "min-h-[calc(100vh-137px)]" : "min-h-[calc(100vh-200px)]",
+      )}
+    >
       {isUploading ? (
         <LoadingUplaod />
       ) : (
@@ -74,7 +111,13 @@ const CompressImagePage = () => {
         />
       )}
 
-      {uploaded && <UploadedView url={uploaded.url} name={uploaded.name} />}
+      {uploaded && (
+        <UploadedView
+          selectFile={selectFile}
+          isUploading={isUploading}
+          data={data}
+        />
+      )}
     </div>
   );
 };

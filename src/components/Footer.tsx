@@ -148,7 +148,7 @@ const Footer = () => {
         </div>
       </footer>
       {!isVisibleFooter && (
-        <footer className="bg-surface-light dark:bg-surface-dark mt-8 py-4">
+        <footer className="bg-surface-light dark:bg-surface-dark py-4">
           <div className="container mx-auto px-4 text-center text-sm text-gray-500 dark:text-gray-400">
             © ImgForgeKit 2025 ® - Your Image Editor
           </div>
