@@ -1,9 +1,15 @@
+"use client";
+
 import Image from "next/image";
 import React from "react";
 import Link from "next/link";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import clsx from "clsx";
+import { usePathname } from "next/navigation";
 
 const Navbar = () => {
+  const pathname = usePathname();
+
   return (
     <header className="bg-surface-light dark:bg-surface-dark sticky top-0 z-50 shadow-sm">
       <nav className="container mx-auto flex items-center justify-between px-6 py-4">
@@ -23,19 +29,49 @@ const Navbar = () => {
             </div>
           </Link>
           <div className="text-text-secondary-light dark:text-text-secondary-dark hidden items-center space-x-6 font-medium md:flex">
-            <Link className="hover:text-primary" href="/compress-image">
+            <Link
+              className={clsx(
+                "hover:text-primary",
+                pathname === "/compress-image" && "text-primary font-bold",
+              )}
+              href="/compress-image"
+            >
               Compress Image
             </Link>
-            <Link className="hover:text-primary" href="/resize-image">
+            <Link
+              className={clsx(
+                "hover:text-primary",
+                pathname === "/resize-image" && "text-primary font-bold",
+              )}
+              href="/resize-image"
+            >
               Resize Image
             </Link>
-            <Link className="hover:text-primary" href="/crop-image">
+            <Link
+              className={clsx(
+                "hover:text-primary",
+                pathname === "/crop-image" && "text-primary font-bold",
+              )}
+              href="/crop-image"
+            >
               Crop Image
             </Link>
-            <Link className="hover:text-primary" href="/convert-to-jpg">
+            <Link
+              className={clsx(
+                "hover:text-primary",
+                pathname === "/convert-to-jpg" && "text-primary font-bold",
+              )}
+              href="/convert-to-jpg"
+            >
               Convert to JPG
             </Link>
-            <Link className="hover:text-primary" href="/photo-editor">
+            <Link
+              className={clsx(
+                "hover:text-primary",
+                pathname === "/photo-editor" && "text-primary font-bold",
+              )}
+              href="/photo-editor"
+            >
               Photo Editor
             </Link>
             <div className="group relative">
