@@ -1,11 +1,16 @@
 "use client";
-import { upload } from "@imagekit/next";
-import React, { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
+import React, { useRef, useState } from "react";
 import CompressImageView from "./_components/CompressImageView";
-import LoadingUplaod from "./_components/LoadingUplaod";
 import UploadedView from "./_components/UploadedView";
+import LoadingUplaod from "./_components/LoadingUplaod";
 import clsx from "clsx";
+import { upload } from "@imagekit/next";
+
+export interface UploadedFile {
+  url: string;
+  file: File;
+  name: string;
+}
 
 interface UploadAuthResponse {
   signature: string;
@@ -14,16 +19,11 @@ interface UploadAuthResponse {
   publicKey: string;
 }
 
-export interface UploadedFile {
-  url: string | undefined;
-  name: string | undefined;
-}
-
 const CompressImagePage = () => {
-  const [isUploading, setIsUploading] = useState(false);
+  const [isProses, setIsProses] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [data, setData] = useState<any[]>([]);
-  const [uploaded, setUploaded] = useState<UploadedFile | null>(null);
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const [dataImageKit, setDataImageKit] = useState<any[]>([]);
 
   const selectFile = () => {
     if (fileInputRef.current) {
@@ -38,84 +38,93 @@ const CompressImagePage = () => {
     return response.json() as Promise<UploadAuthResponse>;
   };
 
-  const uploadFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file?.type.startsWith("image/")) return;
 
-    setIsUploading(true);
-    try {
-      const authParams = await getUploadAuth();
-      const res = await upload({
-        file,
-        fileName: file.name,
-        folder: "/ImgForgeKit",
-        ...authParams,
-      });
+    const objectUrl = URL.createObjectURL(file);
 
-      setUploaded({ url: res.url, name: res.name });
-
-      toast.success("Upload successful!");
-    } catch (error) {
-      toast.error("Upload failed");
-      console.error(error);
-    } finally {
-      setIsUploading(false);
-    }
+    setUploadedFiles((prev) => [
+      ...prev,
+      { url: objectUrl, file, name: file.name },
+    ]);
   };
 
-  useEffect(() => {
-    if (uploaded) {
-      const existing = sessionStorage.getItem("uploadedFiles");
-      let files: UploadedFile[] = [];
+  const getTransformedUrl = (
+    originalUrl: string,
+    {
+      quality = "auto",
+      format = "jpg",
+    }: { quality?: string | number; format?: string } = {},
+  ) => {
+    const params: string[] = [];
 
-      try {
-        files = existing ? JSON.parse(existing) : [];
-      } catch (e) {
-        files = [];
-      }
+    if (format) params.push(`f-${format}`);
+    if (quality) params.push(`q-${quality}`);
 
-      if (!Array.isArray(files)) {
-        files = [files];
-      }
+    const transform = params.length ? `?tr=${params.join(",")}` : "";
+    return `${originalUrl}${transform}`;
+  };
 
-      const updated = [...files, uploaded];
-      sessionStorage.setItem("uploadedFiles", JSON.stringify(updated));
+  const compressedFiles = dataImageKit.map((file: { url: string }) => ({
+    compressedUrl: getTransformedUrl(file.url),
+  }));
 
-      const dataUploaded = sessionStorage.getItem("uploadedFiles");
-      if (dataUploaded) {
-        try {
-          const parsed: any[] = JSON.parse(dataUploaded);
-          setData(parsed);
-        } catch (e) {
-          console.error("Failed to parse sessionStorage:", e);
-        }
-      }
+  const uploadAllToImageKit = async (files: File[]) => {
+    setIsProses(true);
+    try {
+      const results = await Promise.all(
+        files.map(async (file) => {
+          const authParams = await getUploadAuth();
+          return upload({
+            file,
+            fileName: file.name,
+            folder: "/ImgForgeKit",
+            ...authParams,
+          });
+        }),
+      );
+
+      setDataImageKit(results);
+      setIsProses(false);
+
+      console.log(compressedFiles);
+    } catch (error) {
+      console.error("Upload failed:", error);
+      throw error;
+    } finally {
+      setIsProses(false);
     }
-  }, [uploaded]);
+  };
 
   return (
     <div
       className={clsx(
         "flex flex-col",
-        uploaded ? "min-h-[calc(100vh-137px)]" : "min-h-[calc(100vh-200px)]",
+        uploadedFiles.length > 0
+          ? "min-h-[calc(100vh-137px)]"
+          : "min-h-[calc(100vh-200px)]",
       )}
     >
-      {isUploading ? (
+      {isProses ? (
         <LoadingUplaod />
       ) : (
         <CompressImageView
           selectFile={selectFile}
-          uploadFile={uploadFile}
+          uploadFile={handleFileSelect}
           fileInputRef={fileInputRef}
-          uploaded={uploaded}
+          uploaded={uploadedFiles[uploadedFiles.length - 1] ?? null}
         />
       )}
 
-      {uploaded && (
+      {uploadedFiles.length > 0 && dataImageKit.length === 0 && (
         <UploadedView
           selectFile={selectFile}
-          isUploading={isUploading}
-          data={data}
+          isUploading={isProses}
+          data={uploadedFiles}
+          handleCompressImage={async () => {
+            await uploadAllToImageKit(uploadedFiles.map((f) => f.file));
+          }}
         />
       )}
     </div>

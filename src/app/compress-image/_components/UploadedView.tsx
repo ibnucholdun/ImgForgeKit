@@ -9,10 +9,12 @@ const UploadedView = ({
   selectFile,
   isUploading,
   data,
+  handleCompressImage,
 }: {
   selectFile: () => void;
   isUploading: boolean;
   data: { url: string; name: string }[];
+  handleCompressImage: () => void;
 }) => {
   return (
     <div
@@ -43,6 +45,7 @@ const UploadedView = ({
                   fill
                   className="rounded-md object-contain"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  unoptimized
                 />
               </div>
               <p className="text-text-secondary-light dark:text-text-secondary-dark mt-2 w-full truncate text-center text-xs">
@@ -91,7 +94,10 @@ const UploadedView = ({
             </p>
           </div>
         </div>
-        <button className="bg-primary hover:bg-primary/90 flex w-full items-center justify-center rounded-lg py-3 text-lg font-semibold text-white transition-colors">
+        <button
+          onClick={handleCompressImage}
+          className="bg-primary hover:bg-primary/90 flex w-full items-center justify-center rounded-lg py-3 text-lg font-semibold text-white transition-colors"
+        >
           Compress IMAGE
           <ArrowRight className="ml-2" />
         </button>
