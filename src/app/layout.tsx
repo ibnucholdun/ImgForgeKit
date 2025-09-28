@@ -3,6 +3,7 @@ import { type Metadata } from "next";
 import { Inter } from "next/font/google";
 import Navbar from "~/components/Navbar";
 import Footer from "~/components/Footer";
+import { Toaster } from "~/components/ui/sonner";
 
 export const metadata: Metadata = {
   title: "ImgForgeKit",
@@ -23,6 +24,7 @@ export default function RootLayout({
       <body className="bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark flex min-h-screen flex-col">
         <Navbar />
         <main className="flex-grow">{children}</main>
+        <Toaster />
         <Footer />
       </body>
     </html>
