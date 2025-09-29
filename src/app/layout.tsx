@@ -3,6 +3,8 @@ import { type Metadata } from "next";
 import { Inter } from "next/font/google";
 import Navbar from "~/components/Navbar";
 import Footer from "~/components/Footer";
+import { Toaster } from "~/components/ui/sonner";
+import ReduxProvider from "~/components/ReduxProvider";
 
 export const metadata: Metadata = {
   title: "ImgForgeKit",
@@ -21,9 +23,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} h-full`}>
       <body className="bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark flex min-h-screen flex-col">
-        <Navbar />
-        <main className="flex-grow">{children}</main>
-        <Footer />
+        <ReduxProvider>
+          <Navbar />
+          <main className="flex-grow">{children}</main>
+          <Toaster />
+          <Footer />
+        </ReduxProvider>
       </body>
     </html>
   );
