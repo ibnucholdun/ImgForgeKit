@@ -4,7 +4,11 @@ import CompressImageView from "./_components/CompressImageView";
 import UploadedView from "./_components/UploadedView";
 import LoadingUplaod from "./_components/LoadingUplaod";
 import clsx from "clsx";
-import { upload } from "@imagekit/next";
+import { upload, type UploadResponse } from "@imagekit/next";
+import { useRouter } from "next/navigation";
+import { setCompressedFiles, setIsProses } from "~/redux/slices/compressSlice";
+import type { RootState } from "~/redux/store";
+import { useAppDispatch, useAppSelector } from "~/lib/hooks";
 
 export interface UploadedFile {
   url: string;
@@ -20,10 +24,15 @@ interface UploadAuthResponse {
 }
 
 const CompressImagePage = () => {
-  const [isProses, setIsProses] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [dataImageKit, setDataImageKit] = useState<any[]>([]);
+  const dispatch = useAppDispatch();
+  const isProses = useAppSelector(
+    (state: RootState) => state.compress.isProses,
+  );
+  const router = useRouter();
+  const id = crypto.randomUUID();
 
   const selectFile = () => {
     if (fileInputRef.current) {
@@ -66,12 +75,8 @@ const CompressImagePage = () => {
     return `${originalUrl}${transform}`;
   };
 
-  const compressedFiles = dataImageKit.map((file: { url: string }) => ({
-    compressedUrl: getTransformedUrl(file.url),
-  }));
-
   const uploadAllToImageKit = async (files: File[]) => {
-    setIsProses(true);
+    dispatch(setIsProses(true));
     try {
       const results = await Promise.all(
         files.map(async (file) => {
@@ -86,14 +91,18 @@ const CompressImagePage = () => {
       );
 
       setDataImageKit(results);
-      setIsProses(false);
 
-      console.log(compressedFiles);
+      const compressedFiles = results.map((file) => ({
+        compressedUrl: getTransformedUrl(file.url!),
+        fileId: file.fileId!,
+      }));
+      dispatch(setCompressedFiles(compressedFiles));
     } catch (error) {
       console.error("Upload failed:", error);
       throw error;
     } finally {
-      setIsProses(false);
+      dispatch(setIsProses(false));
+      router.push(`/compress-image/download/${id}`);
     }
   };
 
@@ -107,7 +116,7 @@ const CompressImagePage = () => {
       )}
     >
       {isProses ? (
-        <LoadingUplaod />
+        <LoadingUplaod feature="Compressing" />
       ) : (
         <CompressImageView
           selectFile={selectFile}
@@ -122,6 +131,7 @@ const CompressImagePage = () => {
           selectFile={selectFile}
           isUploading={isProses}
           data={uploadedFiles}
+          setUploadedFiles={setUploadedFiles}
           handleCompressImage={async () => {
             await uploadAllToImageKit(uploadedFiles.map((f) => f.file));
           }}

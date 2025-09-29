@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 import clsx from "clsx";
 import { ArrowRight, Plus, RotateCw, X } from "lucide-react";
 import Image from "next/image";
@@ -10,12 +11,19 @@ const UploadedView = ({
   isUploading,
   data,
   handleCompressImage,
+  setUploadedFiles,
 }: {
   selectFile: () => void;
   isUploading: boolean;
   data: { url: string; name: string }[];
   handleCompressImage: () => void;
+  setUploadedFiles: any;
 }) => {
+  const handleDeleteFile = (index: number) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    setUploadedFiles((prev: any[]) => prev.filter((_, i) => i !== index));
+  };
+
   return (
     <div
       className={clsx(
@@ -25,7 +33,7 @@ const UploadedView = ({
     >
       <main className="bg-background-light dark:bg-background-dark relative flex flex-1 flex-grow flex-col items-center justify-start overflow-y-auto p-8">
         <div className="flex flex-wrap space-y-6 space-x-6 lg:max-w-5xl">
-          {data.map((item: { url: string; name: string }) => (
+          {data.map((item: { url: string; name: string }, index: number) => (
             <div
               className="group relative flex h-[250px] w-[230px] flex-col items-center rounded-lg bg-white p-2 shadow-md"
               key={item.url}
@@ -34,7 +42,10 @@ const UploadedView = ({
                 <button className="bg-primary/25 cursor-pointer rounded-full p-1">
                   <RotateCw className="h-3 w-3" />
                 </button>
-                <button className="bg-primary/25 cursor-pointer rounded-full p-1">
+                <button
+                  onClick={() => handleDeleteFile(index)}
+                  className="bg-primary/25 cursor-pointer rounded-full p-1"
+                >
                   <X className="h-3 w-3" />
                 </button>
               </div>
@@ -96,7 +107,7 @@ const UploadedView = ({
         </div>
         <button
           onClick={handleCompressImage}
-          className="bg-primary hover:bg-primary/90 flex w-full items-center justify-center rounded-lg py-3 text-lg font-semibold text-white transition-colors"
+          className="bg-primary hover:bg-primary/90 flex w-full cursor-pointer items-center justify-center rounded-lg py-3 text-lg font-semibold text-white transition-colors"
         >
           Compress IMAGE
           <ArrowRight className="ml-2" />

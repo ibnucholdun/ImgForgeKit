@@ -1,6 +1,6 @@
 import React from "react";
 
-const LoadingUplaod = () => {
+const LoadingUplaod = ({ feature }: { feature: string }) => {
   return (
     <div className="from-muted/50 via-background to-muted/30 relative flex flex-grow flex-col items-center justify-center overflow-hidden p-6 text-center sm:p-12">
       <div className="relative z-10">
@@ -16,7 +16,7 @@ const LoadingUplaod = () => {
           ></div>
         </div>
         <h3 className="text-foreground mb-2 text-lg font-bold">
-          Uploading your image
+          {feature} your image
         </h3>
         <p className="text-muted-foreground text-sm">
           Processing your file with AI magic ✨
