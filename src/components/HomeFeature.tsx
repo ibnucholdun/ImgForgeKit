@@ -1,19 +1,23 @@
 import clsx from "clsx";
 import React from "react";
+import type { UploadedFile } from "~/app/compress-image/page";
 import { DropboxIcon } from "~/components/icons/Dropbox";
 import { GoogleDriveIcon } from "~/components/icons/GoogleDrive";
-import type { UploadedFile } from "../page";
 
-const CompressImageView = ({
+const HomeFeature = ({
   selectFile,
   uploadFile,
   fileInputRef,
   uploaded,
+  title,
+  description,
 }: {
   selectFile: () => void;
   uploadFile: (event: React.ChangeEvent<HTMLInputElement>) => void;
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   uploaded: UploadedFile | null;
+  title: string;
+  description: React.ReactNode;
 }) => {
   return (
     <section
@@ -23,17 +27,9 @@ const CompressImageView = ({
       )}
     >
       <h1 className="text-on-surface-light dark:text-on-surface-dark mb-4 text-2xl font-bold md:text-5xl">
-        Compress IMAGE
+        {title}
       </h1>
-      <p className="mb-8 text-base text-gray-600 md:text-lg dark:text-gray-300">
-        Compress <span className="text-primary font-bold">JPG</span>,
-        <span className="text-primary font-bold">PNG</span>,
-        <span className="text-primary font-bold">SVG</span> or
-        <span className="text-primary font-bold">GIF</span> with the best
-        quality and compression.
-        <br />
-        Reduce the filesize of your images at once.
-      </p>
+      {description}
       <div className="w-full max-w-lg">
         <div className="flex items-center space-x-4">
           <button
@@ -66,4 +62,4 @@ const CompressImageView = ({
   );
 };
 
-export default CompressImageView;
+export default HomeFeature;

@@ -5,12 +5,14 @@ import LoadingUplaod from "../../components/LoadingUplaod";
 import clsx from "clsx";
 import { upload } from "@imagekit/next";
 import { useRouter } from "next/navigation";
-import { setCompressedFiles, setIsProses } from "~/redux/slices/compressSlice";
+import { setResizedFile, setIsProses } from "~/redux/slices/resizeSlice";
 import type { RootState } from "~/redux/store";
 import { useAppDispatch, useAppSelector } from "~/lib/hooks";
 import HomeFeature from "~/components/HomeFeature";
+import AsideUploadedView from "./_components/AsideUploadedView";
 
 export interface UploadedFile {
+  at?: any;
   url: string;
   file: File;
   name: string;
@@ -26,14 +28,17 @@ interface UploadAuthResponse {
   publicKey: string;
 }
 
-const CompressImagePage = () => {
+const ResizeImagePage = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [dataImageKit, setDataImageKit] = useState<any[]>([]);
   const dispatch = useAppDispatch();
-  const isProses = useAppSelector(
-    (state: RootState) => state.compress.isProses,
-  );
+  const isProses = useAppSelector((state: RootState) => state.resize.isProses);
+  const { width, height } = useAppSelector((s) => s.resize.resize);
+
+  const w = typeof width === "number" ? width : undefined;
+  const h = typeof height === "number" ? height : undefined;
+
   const router = useRouter();
   const id = crypto.randomUUID();
 
@@ -50,39 +55,46 @@ const CompressImagePage = () => {
     return response.json() as Promise<UploadAuthResponse>;
   };
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+  function getDimsFromFile(file: File) {
+    return createImageBitmap(file).then((b) => {
+      const dims = { width: b.width, height: b.height };
+      b.close?.();
+      return dims;
+    });
+  }
+
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
     if (!file?.type.startsWith("image/")) return;
 
-    const objectUrl = URL.createObjectURL(file);
-
-    setUploadedFiles((prev) => [
-      ...prev,
-      {
-        url: objectUrl,
-        file,
-        name: file.name,
-        id: crypto.randomUUID(),
-        width: null,
-        height: null,
-      },
+    const url = URL.createObjectURL(file);
+    const id = crypto.randomUUID();
+    setUploadedFiles((p) => [
+      ...p,
+      { id, url, file, name: file.name, width: null, height: null },
     ]);
-  };
+
+    void getDimsFromFile(file).then(({ width, height }) => {
+      setUploadedFiles((p) =>
+        p.map((f) => (f.id === id ? { ...f, width, height } : f)),
+      );
+    });
+  }
 
   const getTransformedUrl = (
     originalUrl: string,
     {
-      quality = "auto",
-      format = "jpg",
-    }: { quality?: string | number; format?: string } = {},
+      width = w,
+      height = h,
+    }: { width?: number | null; height?: number | null } = {},
   ) => {
     const params: string[] = [];
 
-    if (format) params.push(`f-${format}`);
-    if (quality) params.push(`q-${quality}`);
+    if (width) params.push(`w-${width}`);
+    if (height) params.push(`h-${height}`);
 
     const transform = params.length ? `?tr=${params.join(",")}` : "";
-    return `${originalUrl}${transform}`;
+    return `${originalUrl}${transform},c-force`;
   };
 
   const uploadAllToImageKit = async (files: File[]) => {
@@ -102,17 +114,18 @@ const CompressImagePage = () => {
 
       setDataImageKit(results);
 
-      const compressedFiles = results.map((file) => ({
-        compressedUrl: getTransformedUrl(file.url!),
+      const resizedFiles = results.map((file) => ({
+        resizedUrl: getTransformedUrl(file.url!),
         fileId: file.fileId!,
       }));
-      dispatch(setCompressedFiles(compressedFiles));
+
+      dispatch(setResizedFile(resizedFiles));
     } catch (error) {
       console.error("Upload failed:", error);
       throw error;
     } finally {
       dispatch(setIsProses(false));
-      router.push(`/compress-image/download/${id}`);
+      router.push(`/resize-image/download/${id}`);
     }
   };
 
@@ -126,23 +139,23 @@ const CompressImagePage = () => {
       )}
     >
       {isProses ? (
-        <LoadingUplaod feature="Compressing" />
+        <LoadingUplaod feature="Resizing" />
       ) : (
         <HomeFeature
           selectFile={selectFile}
           uploadFile={handleFileSelect}
           fileInputRef={fileInputRef}
           uploaded={uploadedFiles[uploadedFiles.length - 1] ?? null}
-          title="Compress Image"
+          title="Resize Image"
           description={
             <p className="mb-8 text-base text-gray-600 md:text-lg dark:text-gray-300">
-              Compress <span className="text-primary font-bold">JPG</span>,
+              Resize <span className="text-primary font-bold">JPG</span>,
               <span className="text-primary font-bold">PNG</span>,
               <span className="text-primary font-bold">SVG</span> or
-              <span className="text-primary font-bold">GIF</span> with the best
-              quality and compression.
+              <span className="text-primary font-bold">GIF</span> by defining
+              new height and width pixels.
               <br />
-              Reduce the filesize of your images at once.
+              Change dimensions your images instantly
             </p>
           }
         />
@@ -154,22 +167,17 @@ const CompressImagePage = () => {
           isUploading={isProses}
           data={uploadedFiles}
           setUploadedFiles={setUploadedFiles}
-          title="Compress Image"
-          buttonName="Compress IMAGE"
+          title="Resize Options"
+          buttonName="Resize IMAGE"
           hanldeButtonProcess={async () => {
             await uploadAllToImageKit(uploadedFiles.map((f) => f.file));
           }}
         >
-          <div className="border-primary rounded-md border-l-4 bg-blue-100/30 p-4 dark:bg-blue-900/20">
-            <p className="text-text-secondary-light dark:text-text-secondary-dark text-sm">
-              All images will be compressed with the best quality and filesize
-              ratio.
-            </p>
-          </div>
+          <AsideUploadedView uploadedFiles={uploadedFiles} />
         </UploadedView>
       )}
     </div>
   );
 };
 
-export default CompressImagePage;
+export default ResizeImagePage;

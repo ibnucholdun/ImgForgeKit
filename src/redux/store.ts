@@ -1,10 +1,12 @@
 import { configureStore } from "@reduxjs/toolkit";
 import compress from "./slices/compressSlice";
+import resize from "./slices/resizeSlice";
 
 export const makeStore = () =>
   configureStore({
     reducer: {
       compress,
+      resize,
     },
   });
 

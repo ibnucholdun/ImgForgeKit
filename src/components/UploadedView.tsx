@@ -1,7 +1,10 @@
+"use client";
+
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 import clsx from "clsx";
 import { ArrowRight, Plus, RotateCw, X } from "lucide-react";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import React from "react";
 import { DropboxIcon } from "~/components/icons/Dropbox";
 import { GoogleDriveIcon } from "~/components/icons/GoogleDrive";
@@ -10,20 +13,27 @@ const UploadedView = ({
   selectFile,
   isUploading,
   data,
-  handleCompressImage,
+  hanldeButtonProcess,
   setUploadedFiles,
+  title,
+  children,
+  buttonName,
 }: {
   selectFile: () => void;
   isUploading: boolean;
   data: { url: string; name: string }[];
-  handleCompressImage: () => void;
+  hanldeButtonProcess: () => void;
   setUploadedFiles: any;
+  title: string;
+  buttonName: string;
+  children: React.ReactNode;
 }) => {
   const handleDeleteFile = (index: number) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     setUploadedFiles((prev: any[]) => prev.filter((_, i) => i !== index));
   };
 
+  const pathname = usePathname();
   return (
     <div
       className={clsx(
@@ -65,7 +75,12 @@ const UploadedView = ({
             </div>
           ))}
         </div>
-        <div className="absolute top-1/12 right-1/12 flex flex-col space-y-4">
+        <div
+          className={clsx(
+            "absolute top-1/12 right-1/12 flex flex-col space-y-4",
+            pathname === "/resize-image" && "hidden",
+          )}
+        >
           <div className="group relative">
             <button
               type="button"
@@ -97,19 +112,14 @@ const UploadedView = ({
       </main>
       <aside className="bg-surface-light dark:bg-surface-dark flex w-80 flex-col justify-between p-6">
         <div>
-          <h2 className="mb-4 text-2xl font-bold">Compress images</h2>
-          <div className="border-primary rounded-md border-l-4 bg-blue-100/30 p-4 dark:bg-blue-900/20">
-            <p className="text-text-secondary-light dark:text-text-secondary-dark text-sm">
-              All images will be compressed with the best quality and filesize
-              ratio.
-            </p>
-          </div>
+          <h2 className="mb-4 text-2xl font-bold">{title}</h2>
+          {children}
         </div>
         <button
-          onClick={handleCompressImage}
+          onClick={hanldeButtonProcess}
           className="bg-primary hover:bg-primary/90 flex w-full cursor-pointer items-center justify-center rounded-lg py-3 text-lg font-semibold text-white transition-colors"
         >
-          Compress IMAGE
+          {buttonName}
           <ArrowRight className="ml-2" />
         </button>
       </aside>
