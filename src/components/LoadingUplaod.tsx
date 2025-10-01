@@ -1,6 +1,6 @@
 import React from "react";
 
-const LoadingUplaod = ({ feature }: { feature: string }) => {
+const LoadingProcess = ({ feature }: { feature: string }) => {
   return (
     <div className="from-muted/50 via-background to-muted/30 relative flex flex-grow flex-col items-center justify-center overflow-hidden p-6 text-center sm:p-12">
       <div className="relative z-10">
@@ -29,4 +29,4 @@ const LoadingUplaod = ({ feature }: { feature: string }) => {
   );
 };
 
-export default LoadingUplaod;
+export default LoadingProcess;
