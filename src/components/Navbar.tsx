@@ -9,6 +9,10 @@ import { usePathname } from "next/navigation";
 
 const Navbar = () => {
   const pathname = usePathname();
+  const isActivePrefix = (pathname: string, base: string) =>
+    new RegExp(`^${base.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&")}(\\/|$)`).test(
+      pathname,
+    );
 
   return (
     <header className="bg-surface-light dark:bg-surface-dark sticky top-0 z-50 shadow-sm">
@@ -32,7 +36,8 @@ const Navbar = () => {
             <Link
               className={clsx(
                 "hover:text-primary",
-                pathname === "/compress-image" && "text-primary font-bold",
+                isActivePrefix(pathname, "/compress-image") &&
+                  "text-primary font-bold",
               )}
               href="/compress-image"
             >
@@ -41,7 +46,8 @@ const Navbar = () => {
             <Link
               className={clsx(
                 "hover:text-primary",
-                pathname === "/resize-image" && "text-primary font-bold",
+                isActivePrefix(pathname, "/resize-image") &&
+                  "text-primary font-bold",
               )}
               href="/resize-image"
             >
@@ -50,7 +56,8 @@ const Navbar = () => {
             <Link
               className={clsx(
                 "hover:text-primary",
-                pathname === "/crop-image" && "text-primary font-bold",
+                isActivePrefix(pathname, "/crop-image") &&
+                  "text-primary font-bold",
               )}
               href="/crop-image"
             >
@@ -59,7 +66,8 @@ const Navbar = () => {
             <Link
               className={clsx(
                 "hover:text-primary",
-                pathname === "/convert-to-jpg" && "text-primary font-bold",
+                isActivePrefix(pathname, "/convert-to-jpg") &&
+                  "text-primary font-bold",
               )}
               href="/convert-to-jpg"
             >
@@ -68,7 +76,8 @@ const Navbar = () => {
             <Link
               className={clsx(
                 "hover:text-primary",
-                pathname === "/photo-editor" && "text-primary font-bold",
+                isActivePrefix(pathname, "/photo-editor") &&
+                  "text-primary font-bold",
               )}
               href="/photo-editor"
             >
