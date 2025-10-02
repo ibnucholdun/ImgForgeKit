@@ -75,7 +75,7 @@ const Navbar = () => {
             </Link>
             <Link
               className={clsx(
-                "hover:text-primary",
+                "hover:text-primary hidden",
                 isActivePrefix(pathname, "/photo-editor") &&
                   "text-primary font-bold",
               )}
