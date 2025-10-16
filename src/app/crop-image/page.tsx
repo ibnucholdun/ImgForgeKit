@@ -151,8 +151,6 @@ const CropImagePage = () => {
     }
   };
 
-  console.log(uploadedFiles.length, dataImageKit.length);
-
   return (
     <div
       className={clsx(
