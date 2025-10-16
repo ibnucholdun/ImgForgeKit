@@ -3,6 +3,7 @@ import compress from "./slices/compressSlice";
 import resize from "./slices/resizeSlice";
 import crop from "./slices/cropSlice";
 import upscale from "./slices/upscaleSlice";
+import removeBackground from "./slices/removeBackgroundSlice";
 
 export const makeStore = () =>
   configureStore({
@@ -11,6 +12,7 @@ export const makeStore = () =>
       resize,
       crop,
       upscale,
+      removeBackground,
     },
   });
 
