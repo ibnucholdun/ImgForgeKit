@@ -2,6 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import compress from "./slices/compressSlice";
 import resize from "./slices/resizeSlice";
 import crop from "./slices/cropSlice";
+import upscale from "./slices/upscaleSlice";
 
 export const makeStore = () =>
   configureStore({
@@ -9,6 +10,7 @@ export const makeStore = () =>
       compress,
       resize,
       crop,
+      upscale,
     },
   });
 
